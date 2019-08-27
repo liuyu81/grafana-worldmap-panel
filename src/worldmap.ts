@@ -2,21 +2,25 @@ import * as _ from 'lodash';
 import * as L from './libs/leaflet';
 import WorldmapCtrl from './worldmap_ctrl';
 
+L.TileLayer.prototype.setFilter = function (filter) {
+  if (this._container) {
+      this._container.style.filter = filter;
+  }
+}
+
 const tileServers = {
-  'CartoDB Positron': {
-    url: 'https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png',
+  'MapWorld Light': {
+    url: 'https://t{s}.tianditu.gov.cn/{layer}_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER={layer}&STYLE={style}&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&tk=49221592d236ef3c1559713efb8d48a1',
     attribution:
-      '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> ' +
-      '&copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
-    subdomains: 'abcd',
+      '&copy; <a href="http://www.tianditu.com/guide/index.html">国家地理信息公共服务平台</a>',
+    subdomains: '01234567',
   },
-  'CartoDB Dark': {
-    url: 'https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png',
+  'MapWorld Dark': {
+    url: 'https://t{s}.tianditu.gov.cn/{layer}_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER={layer}&STYLE={style}&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&tk=49221592d236ef3c1559713efb8d48a1',
     attribution:
-      '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> ' +
-      '&copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
-    subdomains: 'abcd',
-  },
+      '&copy; <a href="http://www.tianditu.com/guide/index.html">国家地理信息公共服务平台</a>',
+    subdomains: '01234567',
+  }
 };
 
 export default class WorldMap {
@@ -47,13 +51,33 @@ export default class WorldMap {
     this.setMouseWheelZoom();
 
     const selectedTileServer = tileServers[this.ctrl.tileServer];
-    (<any>window).L.tileLayer(selectedTileServer.url, {
+
+    const basemap = (<any>window).L.tileLayer(selectedTileServer.url, {
+      layer: 'vec',
+      style: 'default',
+      minZoom: 1,
       maxZoom: 18,
       subdomains: selectedTileServer.subdomains,
       reuseTiles: true,
       detectRetina: true,
       attribution: selectedTileServer.attribution,
     }).addTo(this.map);
+
+    const overlay = (<any>window).L.tileLayer(selectedTileServer.url, {
+      layer: 'cva',
+      style: 'default',
+      minZoom: 1,
+      maxZoom: 18,
+      subdomains: selectedTileServer.subdomains,
+      reuseTiles: true,
+      detectRetina: true,
+      attribution: selectedTileServer.attribution,
+    }).addTo(this.map);
+
+    if (this.ctrl.tileServer.indexOf('Dark') >= 0) {
+      basemap.setFilter("grayscale(100%) invert(100%)");
+      overlay.setFilter("grayscale(100%) invert(100%)");
+    }
   }
 
   createLegend() {

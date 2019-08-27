@@ -48,7 +48,8 @@ const mapCenters = {
   Europe: { mapCenterLatitude: 46, mapCenterLongitude: 14 },
   "West Asia": { mapCenterLatitude: 26, mapCenterLongitude: 53 },
   "SE Asia": { mapCenterLatitude: 10, mapCenterLongitude: 106 },
-  "Last GeoHash": { mapCenterLatitude: 0, mapCenterLongitude: 0 }
+  "Last GeoHash": { mapCenterLatitude: 0, mapCenterLongitude: 0 },
+  China: { mapCenterLatitude: 35, mapCenterLongitude: 106 }
 };
 
 export default class WorldmapCtrl extends MetricsPanelCtrl {
@@ -82,17 +83,18 @@ export default class WorldmapCtrl extends MetricsPanelCtrl {
 
   setMapProvider(contextSrv) {
     this.tileServer = contextSrv.user.lightTheme
-      ? "CartoDB Positron"
-      : "CartoDB Dark";
+      ? "MapWorld Light"
+      : "MapWorld Dark";
     this.setMapSaturationClass();
   }
 
   setMapSaturationClass() {
-    if (this.tileServer === "CartoDB Dark") {
-      this.saturationClass = "map-darken";
-    } else {
-      this.saturationClass = "";
-    }
+    // if (this.tileServer === "MapWorld Dark") {
+    //   this.saturationClass = "map-darken";
+    // } else {
+    //   this.saturationClass = "";
+    // }
+    this.saturationClass = "";
   }
 
   loadLocationDataFromFile(reload?) {
