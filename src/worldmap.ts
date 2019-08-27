@@ -10,15 +10,15 @@ L.TileLayer.prototype.setFilter = function (filter) {
 
 const tileServers = {
   'MapWorld Light': {
-    url: 'https://t{s}.tianditu.gov.cn/{layer}_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER={layer}&STYLE={style}&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&tk=49221592d236ef3c1559713efb8d48a1',
+    url: 'https://t{s}.tianditu.gov.cn/{layer}_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER={layer}&STYLE={style}&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&tk={token}',
     attribution:
-      '&copy; <a href="http://www.tianditu.com/guide/index.html">国家地理信息公共服务平台</a>',
+      '&copy; <a href="https://www.tianditu.gov.cn">国家地理信息公共服务平台</a>',
     subdomains: '01234567',
   },
   'MapWorld Dark': {
-    url: 'https://t{s}.tianditu.gov.cn/{layer}_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER={layer}&STYLE={style}&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&tk=49221592d236ef3c1559713efb8d48a1',
+    url: 'https://t{s}.tianditu.gov.cn/{layer}_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER={layer}&STYLE={style}&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&tk={token}',
     attribution:
-      '&copy; <a href="http://www.tianditu.com/guide/index.html">国家地理信息公共服务平台</a>',
+      '&copy; <a href="https://www.tianditu.gov.cn">国家地理信息公共服务平台</a>',
     subdomains: '01234567',
   }
 };
@@ -55,6 +55,7 @@ export default class WorldMap {
     const basemap = (<any>window).L.tileLayer(selectedTileServer.url, {
       layer: 'vec',
       style: 'default',
+      token: '49221592d236ef3c1559713efb8d48a1',
       minZoom: 1,
       maxZoom: 18,
       subdomains: selectedTileServer.subdomains,
@@ -66,6 +67,7 @@ export default class WorldMap {
     const overlay = (<any>window).L.tileLayer(selectedTileServer.url, {
       layer: 'cva',
       style: 'default',
+      token: '49221592d236ef3c1559713efb8d48a1',
       minZoom: 1,
       maxZoom: 18,
       subdomains: selectedTileServer.subdomains,
@@ -80,11 +82,15 @@ export default class WorldMap {
       overlay.setFilter("grayscale(100%) invert(100%)");
     }
 
-    // force window resize
+    // dispatch a resize event to adjust map canvas
     setTimeout(() => {
-      const evt = window.document.createEvent('UIEvents');
-      evt.initUIEvent('resize', true, false, window, 0); 
-      window.dispatchEvent(evt);  
+      if (Event.prototype.initEvent) {
+        const evt = (<any>window).document.createEvent('UIEvents');
+        evt.initUIEvent('resize', true, false, window, 0);
+        (<any>window).dispatchEvent(evt);
+      } else {
+        (<any>window).dispatchEvent(new Event('resize'));
+      }
     }, 350);
   }
 
