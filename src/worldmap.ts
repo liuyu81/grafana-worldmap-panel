@@ -74,10 +74,18 @@ export default class WorldMap {
       attribution: selectedTileServer.attribution,
     }).addTo(this.map);
 
+    // switch to dark mode
     if (this.ctrl.tileServer.indexOf('Dark') >= 0) {
       basemap.setFilter("grayscale(100%) invert(100%)");
       overlay.setFilter("grayscale(100%) invert(100%)");
     }
+
+    // force window resize
+    setTimeout(() => {
+      const evt = window.document.createEvent('UIEvents');
+      evt.initUIEvent('resize', true, false, window, 0); 
+      window.dispatchEvent(evt);  
+    }, 350);
   }
 
   createLegend() {
