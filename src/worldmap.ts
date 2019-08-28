@@ -2,24 +2,31 @@ import * as _ from 'lodash';
 import * as L from './libs/leaflet';
 import WorldmapCtrl from './worldmap_ctrl';
 
+// update container css filter (to adjust map color)
 L.TileLayer.prototype.setFilter = function (filter) {
   if (this._container) {
-      this._container.style.filter = filter;
+    this._container.style.filter = filter;
   }
+  return this;
 }
 
+// raster map server
 const tileServers = {
   'MapWorld Light': {
     url: 'https://t{s}.tianditu.gov.cn/{layer}_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER={layer}&STYLE={style}&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&tk={token}',
     attribution:
       '&copy; <a href="https://www.tianditu.gov.cn">国家地理信息公共服务平台</a>',
     subdomains: '01234567',
+    layers: ['vec', 'cva'],
+    filter: null,
   },
   'MapWorld Dark': {
     url: 'https://t{s}.tianditu.gov.cn/{layer}_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER={layer}&STYLE={style}&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&tk={token}',
     attribution:
       '&copy; <a href="https://www.tianditu.gov.cn">国家地理信息公共服务平台</a>',
     subdomains: '01234567',
+    layers: ['vec', 'cva'],
+    filter: "grayscale(100%) invert(100%)",
   }
 };
 
@@ -49,39 +56,21 @@ export default class WorldMap {
       zoom: parseInt(this.ctrl.panel.initialZoom, 10) || 1,
     });
     this.setMouseWheelZoom();
-
+    // generate tile layers
     const selectedTileServer = tileServers[this.ctrl.tileServer];
-
-    const basemap = (<any>window).L.tileLayer(selectedTileServer.url, {
-      layer: 'vec',
-      style: 'default',
-      token: '49221592d236ef3c1559713efb8d48a1',
-      minZoom: 1,
-      maxZoom: 18,
-      subdomains: selectedTileServer.subdomains,
-      reuseTiles: true,
-      detectRetina: true,
-      attribution: selectedTileServer.attribution,
-    }).addTo(this.map);
-
-    const overlay = (<any>window).L.tileLayer(selectedTileServer.url, {
-      layer: 'cva',
-      style: 'default',
-      token: '49221592d236ef3c1559713efb8d48a1',
-      minZoom: 1,
-      maxZoom: 18,
-      subdomains: selectedTileServer.subdomains,
-      reuseTiles: true,
-      detectRetina: true,
-      attribution: selectedTileServer.attribution,
-    }).addTo(this.map);
-
-    // switch to dark mode
-    if (this.ctrl.tileServer.indexOf('Dark') >= 0) {
-      basemap.setFilter("grayscale(100%) invert(100%)");
-      overlay.setFilter("grayscale(100%) invert(100%)");
+    for (let layer of selectedTileServer.layers) {
+      (<any>window).L.tileLayer(selectedTileServer.url, {
+        layer,
+        style: 'default',
+        token: '49221592d236ef3c1559713efb8d48a1',
+        minZoom: 1,
+        maxZoom: 18,
+        subdomains: selectedTileServer.subdomains,
+        reuseTiles: true,
+        detectRetina: true,
+        attribution: selectedTileServer.attribution,
+      }).addTo(this.map).setFilter(selectedTileServer.filter);
     }
-
     // dispatch a resize event to adjust map canvas
     setTimeout(() => {
       if (Event.prototype.initEvent) {
